@@ -24,6 +24,7 @@ if not os.path.exists(UPLOADS_DIR):
 # ----------------- Создаём app -----------------
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
+
 # ----------------- Работа с кандидатами -----------------
 def load_candidates():
     if not os.path.exists(DATA_FILE):
@@ -38,6 +39,7 @@ def load_candidates():
         print(f"[ERROR] load_candidates: {e}")
         return []
 
+
 def save_candidates(candidates):
     try:
         with open(DATA_FILE, "w", encoding="utf-8") as f:
@@ -45,15 +47,17 @@ def save_candidates(candidates):
     except Exception as e:
         print(f"[ERROR] save_candidates: {e}")
 
+
 def new_id():
     return int(datetime.now().timestamp() * 1000)
+
 
 # ----------------- Маршруты -----------------
 @app.route("/")
 def index():
     template_name = "index.html"
     template_path = os.path.join(TEMPLATE_DIR, template_name)
-    
+
     print(f"[INFO] TEMPLATE_DIR: {TEMPLATE_DIR}")
     print(f"[INFO] Проверяем существование шаблона: {template_path}")
     if not os.path.exists(template_path):
@@ -70,6 +74,7 @@ def index():
 @app.route("/api/candidates", methods=["GET"])
 def get_candidates():
     return jsonify(load_candidates())
+
 
 @app.route("/api/candidates", methods=["POST"])
 def add_or_update_candidate():
@@ -110,12 +115,14 @@ def add_or_update_candidate():
     save_candidates(candidates)
     return jsonify({"status": "created", "candidate": cand})
 
+
 @app.route("/api/candidates/<int:cand_id>", methods=["DELETE"])
 def delete_candidate(cand_id):
     candidates = load_candidates()
     new = [c for c in candidates if c.get("id") != cand_id]
     save_candidates(new)
     return jsonify({"status": "deleted"})
+
 
 @app.route("/api/candidates/<int:cand_id>/patch", methods=["POST"])
 def patch_candidate(cand_id):
@@ -129,14 +136,15 @@ def patch_candidate(cand_id):
             return jsonify({"status": "ok", "candidate": c})
     return jsonify({"error": "not found"}), 404
 
+
 # ----------------- Загрузка файлов -----------------
 @app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
     return send_from_directory(UPLOADS_DIR, filename)
+
 
 # ----------------- Запуск -----------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"[INFO] Flask запущен на порту {port}")
     app.run(host="0.0.0.0", port=port, debug=True)
-
