@@ -1,11 +1,17 @@
-from flask import Flask, render_template, request, jsonify
-import json, os
+from flask import Flask, render_template, request, jsonify, send_from_directory
+import json
+import os
 from datetime import datetime
 
-app = Flask(__name__, static_folder="static", template_folder="templates")
-DATA_FILE = "data.json"
+# Папки для статических файлов и шаблонов
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+DATA_FILE = os.path.join(BASE_DIR, "data.json")
 
+app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
+# ----------------- Работа с кандидатами -----------------
 def load_candidates():
     if not os.path.exists(DATA_FILE):
         return []
@@ -18,25 +24,21 @@ def load_candidates():
     except Exception:
         return []
 
-
 def save_candidates(candidates):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
         json.dump(candidates, f, ensure_ascii=False, indent=2)
 
-
 def new_id():
     return int(datetime.now().timestamp() * 1000)
 
-
+# ----------------- Маршруты -----------------
 @app.route("/")
 def index():
     return render_template("index.html")
 
-
 @app.route("/api/candidates", methods=["GET"])
 def get_candidates():
     return jsonify(load_candidates())
-
 
 @app.route("/api/candidates", methods=["POST"])
 def add_or_update_candidate():
@@ -65,22 +67,21 @@ def add_or_update_candidate():
     # default values
     cand.setdefault("status", "normal")
     cand.setdefault("reserved", True)
-    cand.setdefault("notCalled", True)     # не обдзвонений
+    cand.setdefault("notCalled", True)
     cand.setdefault("called", False)
     cand.setdefault("interning", False)
     cand.setdefault("hired", False)
     cand.setdefault("rejected", False)
 
-    # нові поля
-    cand.setdefault("callback_date", None)   # нагадування (дата)
-    cand.setdefault("intern_days", 0)        # кількість днів стажування
-    cand.setdefault("intern_place", "")      # текстове поле для стажування
-    cand.setdefault("work_time", "permanent")  # постійно/тимчасово
+    # новые поля
+    cand.setdefault("callback_date", None)
+    cand.setdefault("intern_days", 0)
+    cand.setdefault("intern_place", "")
+    cand.setdefault("work_time", "permanent")
 
     candidates.append(cand)
     save_candidates(candidates)
     return jsonify({"status": "created", "candidate": cand})
-
 
 @app.route("/api/candidates/<int:cand_id>", methods=["DELETE"])
 def delete_candidate(cand_id):
@@ -88,7 +89,6 @@ def delete_candidate(cand_id):
     new = [c for c in candidates if c.get("id") != cand_id]
     save_candidates(new)
     return jsonify({"status": "deleted"})
-
 
 @app.route("/api/candidates/<int:cand_id>/patch", methods=["POST"])
 def patch_candidate(cand_id):
@@ -102,6 +102,13 @@ def patch_candidate(cand_id):
             return jsonify({"status": "ok", "candidate": c})
     return jsonify({"error": "not found"}), 404
 
+# ----------------- Для загрузки файлов, если будет нужно -----------------
+@app.route("/uploads/<path:filename>")
+def uploaded_file(filename):
+    uploads_dir = os.path.join(BASE_DIR, "uploads")
+    return send_from_directory(uploads_dir, filename)
 
+# ----------------- Запуск -----------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)
