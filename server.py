@@ -51,10 +51,21 @@ def new_id():
 # ----------------- Маршруты -----------------
 @app.route("/")
 def index():
+    template_name = "index.html"
+    template_path = os.path.join(TEMPLATE_DIR, template_name)
+    
+    print(f"[INFO] TEMPLATE_DIR: {TEMPLATE_DIR}")
+    print(f"[INFO] Проверяем существование шаблона: {template_path}")
+    if not os.path.exists(template_path):
+        print(f"[ERROR] Шаблон {template_name} не найден!")
+        return f"Template {template_name} not found at {template_path}", 500
+
     try:
-        return render_template("index.html")
+        return render_template(template_name)
     except Exception as e:
+        print(f"[ERROR] Ошибка при рендере шаблона: {e}")
         return f"Template error: {e}", 500
+
 
 @app.route("/api/candidates", methods=["GET"])
 def get_candidates():
@@ -128,3 +139,4 @@ if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
     print(f"[INFO] Flask запущен на порту {port}")
     app.run(host="0.0.0.0", port=port, debug=True)
+
