@@ -1,13 +1,12 @@
 import os
 import json
-import threading
 import asyncio
+import threading
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from aiogram import Bot, Dispatcher, types
 from aiogram.types import WebAppInfo
 from aiogram.filters import Command
-
 
 # ---------------------------
 # Пути и настройки
@@ -22,7 +21,6 @@ for path in (TEMPLATE_DIR, STATIC_DIR, UPLOADS_DIR):
     if not os.path.exists(path):
         os.makedirs(path)
 
-
 # ---------------------------
 # Flask Web App
 # ---------------------------
@@ -33,8 +31,9 @@ def load_candidates():
         return []
     try:
         with open(DATA_FILE, "r", encoding="utf-8") as f:
-            return json.load(f) if f.read().strip() else []
-    except:
+            data = f.read().strip()
+            return json.loads(data) if data else []
+    except Exception:
         return []
 
 def save_candidates(candidates):
@@ -79,11 +78,10 @@ def add_candidate():
 def uploaded_file(filename):
     return send_from_directory(UPLOADS_DIR, filename)
 
-
 # ---------------------------
 # Telegram Bot (Aiogram)
 # ---------------------------
-API_TOKEN = "7974895632:AAGB3h8gzFPS0paoowUELBZIaM3X4MekWWs"
+API_TOKEN = ("7974895632:AAGB3h8gzFPS0paoowUELBZIaM3X4MekWWs")
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
@@ -101,25 +99,22 @@ async def start_command(message: types.Message):
     )
     await message.answer("Нажми кнопку ниже, чтобы открыть мини-апп:", reply_markup=keyboard)
 
-
-async def run_bot():
+# ---------------------------
+# Запуск
+# ---------------------------
+async def start_bot():
     print("[BOT] Бот запускается...")
     await dp.start_polling(bot)
 
-
-def run_flask():
+def start_flask():
     port = int(os.environ.get("PORT", 5000))
     print(f"[FLASK] Сервер запущен на порту {port}")
-    app.run(host="0.0.0.0", port=port, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
 
-
-# ---------------------------
-# Запуск обоих сервисов
-# ---------------------------
 if __name__ == "__main__":
     # Flask в отдельном потоке
-    flask_thread = threading.Thread(target=run_flask, daemon=True)
+    flask_thread = threading.Thread(target=start_flask, daemon=True)
     flask_thread.start()
 
-    # Telegram бот
-    asyncio.run(run_bot())
+    # Запуск Telegram-бота (основной поток)
+    asyncio.run(start_bot())
