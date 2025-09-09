@@ -17,7 +17,7 @@ async def start_command(message: types.Message):
         keyboard=[
             [types.KeyboardButton(
                 text="Открыть мини-апп",
-                web_app=WebAppInfo(url="https://fascinating-stroopwafel-e24651.netlify.app/")
+                web_app=WebAppInfo(url="https://rezerv-jsnp.onrender.com/")
             )]
         ],
         resize_keyboard=True
