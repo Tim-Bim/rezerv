@@ -3,10 +3,10 @@ from aiogram.types import WebAppInfo
 from aiogram.filters import Command
 import asyncio
 import os
-TOKEN = os.getenv("8241120054:AAEYyOEq61QiX4EYfVzue7sIKOHbAUHN4Qg")
+TOKEN = os.getenv("7974895632:AAGB3h8gzFPS0paoowUELBZIaM3X4MekWWs")
 
 
-API_TOKEN = "8241120054:AAEYyOEq61QiX4EYfVzue7sIKOHbAUHN4Qg"
+API_TOKEN = "7974895632:AAGB3h8gzFPS0paoowUELBZIaM3X4MekWWs"
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
@@ -29,3 +29,4 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
