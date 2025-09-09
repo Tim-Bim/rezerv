@@ -1,6 +1,7 @@
 Flask
-aiogram
+aiogram==3.*
 gunicorn
 python-dotenv
 requests
+
 
