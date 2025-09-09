@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>HR — Candidates</title>
+  <title>HR — Candidates 👨‍💼👩‍💼</title>
   <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 </head>
@@ -13,7 +13,7 @@
     <!-- Notifications -->
     <div id="notifWrap" style="position:fixed;top:14px;right:18px;z-index:9999;">
       <div id="notifBtn" style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;">
-        <span style="font-size:20px;line-height:1;">✉️</span>
+        <span style="font-size:20px;line-height:1;">✉️📢</span>
         <span id="notifDot" style="min-width:20px;height:20px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-size:12px;padding:0 6px;background:gray;color:#fff;"></span>
       </div>
       <div id="notifPanel" class="hidden" style="width:320px;max-height:420px;overflow:auto;background:var(--panel-bg,#0f1115);color:var(--text,#eee);padding:10px;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,0.6);margin-top:10px;"></div>
@@ -21,181 +21,176 @@
 
     <!-- Topbar -->
     <nav class="topbar">
-      <div class="logo">Rezerv</div>
+      <div class="logo">Rezerv ⚡</div>
       <div class="top-actions">
-        <button id="btnAdd" class="btn ghost">Додати кандидата</button>
-        <button id="btnView" class="btn">Перегляд</button>
+        <button id="btnAdd" class="btn ghost">➕ Додати кандидата</button>
+        <button id="btnView" class="btn">👀 Перегляд</button>
       </div>
     </nav>
 
     <!-- Hero Section -->
     <section class="hero">
-      <h1>Кандидати — Резерв персоналу</h1>
-      <p class="lead">Три міста: <strong>Житомир</strong>, <strong>Луцьк</strong>, <strong>Черкаси</strong>. Сортуй, фільтруй, дзвони одним кліком.</p>
+      <h1>Кандидати — Резерв персоналу 📝</h1>
+      <p class="lead">🌍 Три міста: <strong>Житомир 🏙️</strong>, <strong>Луцьк 🏞️</strong>, <strong>Черкаси 🌉</strong>.
+      🔎 Сортуй, фільтруй, 📞 дзвони одним кліком.</p>
     </section>
 
     <!-- Controls / Filters -->
     <section class="controls">
       <div class="filters-row">
         <div class="chips">
-          <button class="chip active" data-city="all">Усі</button>
-          <button class="chip" data-city="Житомир">Житомир</button>
-          <button class="chip" data-city="Луцьк">Луцьк</button>
-          <button class="chip" data-city="Черкаси">Черкаси</button>
+          <button class="chip active" data-city="all">🌐 Усі</button>
+          <button class="chip" data-city="Житомир">🏙️ Житомир</button>
+          <button class="chip" data-city="Луцьк">🌆 Луцьк</button>
+          <button class="chip" data-city="Черкаси">🌉 Черкаси</button>
         </div>
 
         <div class="filter-group">
           <select id="filterGender" class="select">
-            <option value="all">Стать — Усі</option>
-            <option value="male">Чоловік</option>
-            <option value="female">Жінка</option>
+            <option value="all">⚧ Стать — Усі</option>
+            <option value="male">👨 Чоловік</option>
+            <option value="female">👩 Жінка</option>
           </select>
 
           <select id="filterPhoto" class="select">
-            <option value="all">Фото — Усі</option>
-            <option value="with">Є фото</option>
-            <option value="no">Без фото</option>
+            <option value="all">📷 Фото — Усі</option>
+            <option value="with">✅ Є фото</option>
+            <option value="no">❌ Без фото</option>
           </select>
 
           <select id="filterStatus" class="select">
-            <option value="all">Статус — Усі</option>
-            <option value="good">Перспективний</option>
-            <option value="normal">Норм</option>
-            <option value="unclear">Непонятно</option>
-            <option value="notCalled">Не обдзвонений</option>
-            <option value="called">Обдзвонений</option>
-            <option value="interning">Стажується</option>
-            <option value="hired">Працевлаштований</option>
-            <option value="rejected">Відмова</option>
+            <option value="all">📌 Статус — Усі</option>
+            <option value="good">🌟 Перспективний</option>
+            <option value="normal">👌 Норм</option>
+            <option value="unclear">❓ Непонятно</option>
+            <option value="notCalled">📭 Не обдзвонений</option>
+            <option value="called">📞 Обдзвонений</option>
+            <option value="interning">🛠️ Стажується</option>
+            <option value="hired">💼 Працевлаштований</option>
+            <option value="rejected">🚫 Відмова</option>
           </select>
 
-          <input id="searchText" class="search" placeholder="Пошук по імені/телефону/коментарю" />
+          <input id="searchText" class="search" placeholder="🔍 Пошук по імені/телефону/коментарю" />
         </div>
       </div>
 
-      <div id="statsBar" style="margin-top:12px;padding:6px 10px;color:var(--muted,#9aa2b2);font-size:13px;"></div>
+      <div id="statsBar" style="margin-top:12px;padding:6px 10px;color:var(--muted,#9aa2b2);font-size:13px;">📊</div>
     </section>
 
     <!-- Cards Container -->
-    <main class="cards-wrap" id="cardsWrap"></main>
+    <main class="cards-wrap" id="cardsWrap">💳</main>
 
     <!-- Detail Panel -->
     <div id="detailPanel" class="panel hidden">
       <div class="panel-inner">
-        <button id="closePanel" class="panel-close">&times;</button>
-        <div id="detailContent"></div>
+        <button id="closePanel" class="panel-close">&times; ❌</button>
+        <div id="detailContent">📄</div>
       </div>
     </div>
 
     <!-- Modal / Add & Edit Candidate -->
     <div id="modal" class="modal hidden">
       <div class="modal-card">
-        <h2 id="modalTitle">Додати кандидата</h2>
+        <h2 id="modalTitle">➕ Додати кандидата</h2>
 
         <div class="form-grid">
-          <!-- Start date first -->
-          <label>Старт
+          <label>📅 Старт
             <input id="startDateInput" type="date">
           </label>
 
-          <!-- City / Gender / Age / Photo / Name -->
-          <label>Місто
+          <label>🌍 Місто
             <select id="cityInput">
-              <option value="Житомир">Житомир</option>
-              <option value="Луцьк">Луцьк</option>
-              <option value="Черкаси">Черкаси</option>
+              <option value="Житомир">🏙️ Житомир</option>
+              <option value="Луцьк">🌆 Луцьк</option>
+              <option value="Черкаси">🌉 Черкаси</option>
             </select>
           </label>
 
-          <label>Стать
+          <label>⚧ Стать
             <select id="genderInput">
-              <option value="male">Чоловік</option>
-              <option value="female">Жінка</option>
+              <option value="male">👨 Чоловік</option>
+              <option value="female">👩 Жінка</option>
             </select>
           </label>
 
-          <label>Вік
+          <label>🎂 Вік
             <input id="ageInput" type="number" min="14" max="100">
           </label>
 
-          <label>Фото
+          <label>📷 Фото
             <input id="photoInput" type="file" accept="image/*">
           </label>
 
-          <label>ФІО
+          <label>📝 ФІО
             <input id="nameInput" type="text" placeholder="ПІБ">
           </label>
 
-          <!-- Work Experience / Current Work / Period / Systems -->
-          <label>Досвід роботи
+          <label>💼 Досвід роботи
             <input id="experienceInput" type="text" placeholder="Коротко">
           </label>
 
-          <label>Зараз працює?
+          <label>👔 Зараз працює?
             <select id="workingInput">
-              <option value="no">Ні</option>
-              <option value="yes">Так</option>
+              <option value="no">❌ Ні</option>
+              <option value="yes">✅ Так</option>
             </select>
           </label>
 
-          <label>Період роботи
+          <label>⏳ Період роботи
             <select id="workTimeInput">
-              <option value="permanent">Постійно</option>
-              <option value="temporary">Тимчасово</option>
+              <option value="permanent">♾️ Постійно</option>
+              <option value="temporary">⌛ Тимчасово</option>
             </select>
           </label>
 
-          <label>Системи / парите?
+          <label>💨 Системи / парите?
             <select id="systemsInput">
-              <option value="no">Ні</option>
-              <option value="yes">Так</option>
+              <option value="no">🚭 Ні</option>
+              <option value="yes">💨 Так</option>
             </select>
           </label>
 
-          <!-- Phone / Callback -->
-          <label>Телефон
+          <label>📞 Телефон
             <input id="phoneInput" type="tel" placeholder="+380...">
           </label>
 
-          <label>Нагадування (дата)
+          <label>⏰ Нагадування (дата)
             <input id="callbackDateInput" type="date">
           </label>
 
-          <!-- Status / Comment -->
-          <label>Статус
+          <label>📌 Статус
             <select id="statusInput">
-              <option value="good">Хороший</option>
-              <option value="normal" selected>Норм</option>
-              <option value="unclear">Непонятно</option>
-              <option value="notCalled">Не обдзвонений</option>
-              <option value="called">Обдзвонений</option>
-              <option value="interning">Стажується</option>
-              <option value="hired">Працевлаштований</option>
-              <option value="rejected">Відмова</option>
+              <option value="good">🌟 Хороший</option>
+              <option value="normal" selected>👌 Норм</option>
+              <option value="unclear">❓ Непонятно</option>
+              <option value="notCalled">📭 Не обдзвонений</option>
+              <option value="called">📞 Обдзвонений</option>
+              <option value="interning">🛠️ Стажується</option>
+              <option value="hired">💼 Працевлаштований</option>
+              <option value="rejected">🚫 Відмова</option>
             </select>
           </label>
 
-          <label>Коментар
+          <label>💬 Коментар
             <textarea id="myNoteInput"></textarea>
           </label>
 
-          <!-- Intern info -->
-          <label>Примітка: інтерн/локація
+          <label>🏢 Примітка: інтерн/локація
             <input id="internPlaceInput" type="text">
           </label>
 
-          <label>Інтерн початок
+          <label>📅 Інтерн початок
             <input id="internStartInput" type="date">
           </label>
 
-          <label>Інтерн днів
+          <label>📊 Інтерн днів
             <input id="internDaysInput" type="number" min="0">
           </label>
         </div>
 
         <div class="modal-actions">
-          <button id="saveBtn" class="btn primary">Зберегти</button>
-          <button id="cancelBtn" class="btn ghost">Скасувати</button>
+          <button id="saveBtn" class="btn primary">💾 Зберегти</button>
+          <button id="cancelBtn" class="btn ghost">❌ Скасувати</button>
         </div>
       </div>
     </div>
