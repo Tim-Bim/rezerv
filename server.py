@@ -3,12 +3,14 @@ import json
 import os
 from datetime import datetime
 
-# Папки для статических файлов и шаблонов
+# ----------------- Пути -----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
 STATIC_DIR = os.path.join(BASE_DIR, "static")
 DATA_FILE = os.path.join(BASE_DIR, "data.json")
+UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
 
+# Создаём app
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
 # ----------------- Работа с кандидатами -----------------
@@ -102,11 +104,12 @@ def patch_candidate(cand_id):
             return jsonify({"status": "ok", "candidate": c})
     return jsonify({"error": "not found"}), 404
 
-# ----------------- Для загрузки файлов, если будет нужно -----------------
+# ----------------- Загрузка файлов -----------------
 @app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
-    uploads_dir = os.path.join(BASE_DIR, "uploads")
-    return send_from_directory(uploads_dir, filename)
+    if not os.path.exists(UPLOADS_DIR):
+        os.makedirs(UPLOADS_DIR)
+    return send_from_directory(UPLOADS_DIR, filename)
 
 # ----------------- Запуск -----------------
 if __name__ == "__main__":
