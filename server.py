@@ -10,7 +10,18 @@ STATIC_DIR = os.path.join(BASE_DIR, "static")
 DATA_FILE = os.path.join(BASE_DIR, "data.json")
 UPLOADS_DIR = os.path.join(BASE_DIR, "uploads")
 
-# Создаём app
+# ----------------- Проверка директорий -----------------
+if not os.path.exists(TEMPLATE_DIR):
+    os.makedirs(TEMPLATE_DIR)
+    print(f"[INFO] Создана папка templates: {TEMPLATE_DIR}")
+if not os.path.exists(STATIC_DIR):
+    os.makedirs(STATIC_DIR)
+    print(f"[INFO] Создана папка static: {STATIC_DIR}")
+if not os.path.exists(UPLOADS_DIR):
+    os.makedirs(UPLOADS_DIR)
+    print(f"[INFO] Создана папка uploads: {UPLOADS_DIR}")
+
+# ----------------- Создаём app -----------------
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
 # ----------------- Работа с кандидатами -----------------
@@ -23,12 +34,16 @@ def load_candidates():
             if not content:
                 return []
             return json.loads(content)
-    except Exception:
+    except Exception as e:
+        print(f"[ERROR] load_candidates: {e}")
         return []
 
 def save_candidates(candidates):
-    with open(DATA_FILE, "w", encoding="utf-8") as f:
-        json.dump(candidates, f, ensure_ascii=False, indent=2)
+    try:
+        with open(DATA_FILE, "w", encoding="utf-8") as f:
+            json.dump(candidates, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"[ERROR] save_candidates: {e}")
 
 def new_id():
     return int(datetime.now().timestamp() * 1000)
@@ -36,7 +51,10 @@ def new_id():
 # ----------------- Маршруты -----------------
 @app.route("/")
 def index():
-    return render_template("index.html")
+    try:
+        return render_template("index.html")
+    except Exception as e:
+        return f"Template error: {e}", 500
 
 @app.route("/api/candidates", methods=["GET"])
 def get_candidates():
@@ -65,8 +83,6 @@ def add_or_update_candidate():
     # 🆕 new candidate
     cand["id"] = new_id()
     cand.setdefault("created_at", datetime.now().isoformat())
-
-    # default values
     cand.setdefault("status", "normal")
     cand.setdefault("reserved", True)
     cand.setdefault("notCalled", True)
@@ -74,8 +90,6 @@ def add_or_update_candidate():
     cand.setdefault("interning", False)
     cand.setdefault("hired", False)
     cand.setdefault("rejected", False)
-
-    # новые поля
     cand.setdefault("callback_date", None)
     cand.setdefault("intern_days", 0)
     cand.setdefault("intern_place", "")
@@ -107,11 +121,10 @@ def patch_candidate(cand_id):
 # ----------------- Загрузка файлов -----------------
 @app.route("/uploads/<path:filename>")
 def uploaded_file(filename):
-    if not os.path.exists(UPLOADS_DIR):
-        os.makedirs(UPLOADS_DIR)
     return send_from_directory(UPLOADS_DIR, filename)
 
 # ----------------- Запуск -----------------
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
+    print(f"[INFO] Flask запущен на порту {port}")
     app.run(host="0.0.0.0", port=port, debug=True)
