@@ -3,5 +3,12 @@ aiogram==3.*
 gunicorn
 python-dotenv
 requests
+Flask
+Flask-Cors
+gunicorn
+aiogram
+aiohttp
+python-dotenv
+
 
 
