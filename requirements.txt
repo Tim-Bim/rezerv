@@ -1,4 +1,6 @@
 Flask
+aiogram
 gunicorn
 python-dotenv
 requests
+
