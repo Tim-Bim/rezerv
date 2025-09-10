@@ -1,14 +1,11 @@
 import os
 import json
-import asyncio
-import threading
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, send_from_directory
-
-# aiogram
-from aiogram import Bot, Dispatcher, types, Router
-from aiogram.types import WebAppInfo
+from flask import Flask, request, jsonify, send_from_directory, render_template
+from aiogram import Bot, Dispatcher, types
+from aiogram.types import WebAppInfo, Update
 from aiogram.filters import Command
+from aiogram.dispatcher.webhook import get_new_configured_app
 
 # -----------------------------
 # Настройки
@@ -34,6 +31,9 @@ for folder in [TEMPLATE_DIR, STATIC_DIR, UPLOADS_DIR]:
 # -----------------------------
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
+# -----------------------------
+# Работа с кандидатами
+# -----------------------------
 def load_candidates():
     if not os.path.exists(DATA_FILE):
         return []
@@ -88,6 +88,7 @@ def add_or_update_candidate():
 
     cid = cand.get("id")
     if cid:
+        # обновление
         for i, c in enumerate(candidates):
             if c.get("id") == cid:
                 cand.setdefault("created_at", c.get("created_at"))
@@ -95,6 +96,7 @@ def add_or_update_candidate():
                 save_candidates(candidates)
                 return jsonify({"status": "updated", "candidate": cand})
 
+    # новая анкета
     cand["id"] = new_id()
     cand.setdefault("created_at", datetime.now().isoformat())
     cand.setdefault("status", "normal")
@@ -137,11 +139,11 @@ def uploaded_file(filename):
     return send_from_directory(UPLOADS_DIR, filename)
 
 # -----------------------------
-# Telegram Bot
+# Telegram Bot (Webhook)
 # -----------------------------
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher()
-router = Router()
+router = dp.router
 
 @router.message(Command("start"))
 async def start_command(message: types.Message):
@@ -158,23 +160,32 @@ async def start_command(message: types.Message):
 
 dp.include_router(router)
 
-async def run_bot():
-    print("🤖 Бот запускается...")
-    await dp.start_polling(bot)
+# Flask endpoint для Telegram Webhook
+@app.route("/webhook", methods=["POST"])
+async def webhook():
+    update = Update(**request.json)
+    await dp.feed_update(update)
+    return jsonify({"status": "ok"})
 
-def run_flask():
-    port = int(os.environ.get("PORT", 5000))
-    print(f"🌐 Flask запущен на порту {port}")
-    # debug=False, use_reloader=False важно для работы в потоке
-    app.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
+# -----------------------------
+# Установка webhook на Telegram
+# -----------------------------
+def setup_webhook():
+    # URL на Render
+    url = os.environ.get("WEBHOOK_URL")
+    if not url:
+        print("[WARNING] WEBHOOK_URL не задан в env, бот работать не будет")
+        return
+    webhook_url = f"{url}/webhook"
+    import asyncio
+    asyncio.run(bot.set_webhook(webhook_url))
+    print(f"[INFO] Webhook установлен на {webhook_url}")
 
 # -----------------------------
 # Запуск
 # -----------------------------
 if __name__ == "__main__":
-    # Flask в отдельном потоке
-    flask_thread = threading.Thread(target=run_flask)
-    flask_thread.start()
-
-    # Бот в asyncio главного потока
-    asyncio.run(run_bot())
+    setup_webhook()
+    port = int(os.environ.get("PORT", 5000))
+    print(f"[INFO] Flask запущен на порту {port}")
+    app.run(host="0.0.0.0", port=port)
