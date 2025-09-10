@@ -34,6 +34,7 @@ for folder in [TEMPLATE_DIR, STATIC_DIR, UPLOADS_DIR]:
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
 
 def load_candidates():
+    """Завантаження анкет з файлу"""
     if not os.path.exists(DATA_FILE):
         return []
     try:
@@ -45,6 +46,7 @@ def load_candidates():
         return []
 
 def save_candidates(candidates):
+    """Збереження анкет у файл"""
     try:
         with open(DATA_FILE, "w", encoding="utf-8") as f:
             json.dump(candidates, f, ensure_ascii=False, indent=2)
@@ -52,6 +54,7 @@ def save_candidates(candidates):
         print(f"[ERROR] save_candidates: {e}")
 
 def new_id():
+    """Генерація унікального ID"""
     return int(datetime.now().timestamp() * 1000)
 
 # -----------------------------
@@ -77,36 +80,30 @@ def add_or_update_candidate():
 
     cid = cand.get("id")
     if cid:
+        # обновление существующей анкеты
         for i, c in enumerate(candidates):
             if c.get("id") == cid:
+                # сохраняем дату создания если была
                 cand.setdefault("created_at", c.get("created_at"))
                 candidates[i] = cand
-                save_candidates(candidates)
+                save_candidates(candidates)  # <--- сохраняем изменения
                 return jsonify({"status": "updated", "candidate": cand})
 
+    # новая анкета
     cand["id"] = new_id()
     cand.setdefault("created_at", datetime.now().isoformat())
-    cand.setdefault("status", "normal")
-    cand.setdefault("reserved", True)
-    cand.setdefault("notCalled", True)
-    cand.setdefault("called", False)
-    cand.setdefault("interning", False)
-    cand.setdefault("hired", False)
-    cand.setdefault("rejected", False)
-    cand.setdefault("callback_date", None)
-    cand.setdefault("intern_days", 0)
-    cand.setdefault("intern_place", "")
-    cand.setdefault("work_time", "permanent")
-
+    cand.setdefault("status", "notCalled")
+    cand.setdefault("workTime", "permanent")
+    cand.setdefault("internship", None)
     candidates.append(cand)
-    save_candidates(candidates)
+    save_candidates(candidates)  # <--- сохраняем новую анкету
     return jsonify({"status": "created", "candidate": cand})
 
 @app.route("/api/candidates/<int:cand_id>", methods=["DELETE"])
 def delete_candidate(cand_id):
     candidates = load_candidates()
-    new = [c for c in candidates if c.get("id") != cand_id]
-    save_candidates(new)
+    new_list = [c for c in candidates if c.get("id") != cand_id]
+    save_candidates(new_list)  # <--- сохраняем после удаления
     return jsonify({"status": "deleted"})
 
 @app.route("/api/candidates/<int:cand_id>/patch", methods=["POST"])
@@ -117,7 +114,7 @@ def patch_candidate(cand_id):
         if c.get("id") == cand_id:
             c.update(payload)
             candidates[i] = c
-            save_candidates(candidates)
+            save_candidates(candidates)  # <--- сохраняем изменения
             return jsonify({"status": "ok", "candidate": c})
     return jsonify({"error": "not found"}), 404
 
