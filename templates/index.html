@@ -9,6 +9,21 @@
 </head>
 <body>
   <div class="app">
+<div id="flash-message" style="
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 14px 24px;
+    border-radius: 12px;
+    background: rgba(30, 30, 40, 0.95);
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+    display: none;
+    z-index: 9999;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+"></div>
 
     <!-- Notifications -->
     <div id="notifWrap" style="position:fixed;top:14px;right:18px;z-index:9999;">
@@ -200,3 +215,4 @@
   <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>
+
