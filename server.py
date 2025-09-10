@@ -1,16 +1,19 @@
 import os
 import json
 from datetime import datetime
-from flask import Flask, request, jsonify, send_from_directory, render_template
+from flask import Flask, render_template, request, jsonify, send_from_directory, abort
 from aiogram import Bot, Dispatcher, types
-from aiogram.types import WebAppInfo, Update
+from aiogram.types import WebAppInfo
 from aiogram.filters import Command
-from aiogram.dispatcher.webhook import get_new_configured_app
+from aiogram.dispatcher.webhook import SendMessage
+from flask_cors import CORS
 
 # -----------------------------
 # Настройки
 # -----------------------------
-API_TOKEN = "7974895632:AAGB3h8gzFPS0paoowUELBZIaM3X4MekWWs"
+API_TOKEN = os.environ.get("API_TOKEN") or "7974895632:AAGB3h8gzFPS0paoowUELBZIaM3X4MekWWs"
+WEBHOOK_PATH = "/webhook"
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL") or "https://rezerv-jsnp.onrender.com" + WEBHOOK_PATH
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 TEMPLATE_DIR = os.path.join(BASE_DIR, "templates")
@@ -30,6 +33,7 @@ for folder in [TEMPLATE_DIR, STATIC_DIR, UPLOADS_DIR]:
 # Flask App
 # -----------------------------
 app = Flask(__name__, template_folder=TEMPLATE_DIR, static_folder=STATIC_DIR)
+CORS(app)  # если нужен доступ с JS с других доменов
 
 # -----------------------------
 # Работа с кандидатами
@@ -88,7 +92,6 @@ def add_or_update_candidate():
 
     cid = cand.get("id")
     if cid:
-        # обновление
         for i, c in enumerate(candidates):
             if c.get("id") == cid:
                 cand.setdefault("created_at", c.get("created_at"))
@@ -96,7 +99,7 @@ def add_or_update_candidate():
                 save_candidates(candidates)
                 return jsonify({"status": "updated", "candidate": cand})
 
-    # новая анкета
+    # 🆕 New candidate
     cand["id"] = new_id()
     cand.setdefault("created_at", datetime.now().isoformat())
     cand.setdefault("status", "normal")
@@ -142,10 +145,9 @@ def uploaded_file(filename):
 # Telegram Bot (Webhook)
 # -----------------------------
 bot = Bot(token=API_TOKEN)
-dp = Dispatcher()
-router = dp.router
+dp = Dispatcher(bot=bot)
 
-@router.message(Command("start"))
+@dp.message(Command("start"))
 async def start_command(message: types.Message):
     keyboard = types.ReplyKeyboardMarkup(
         keyboard=[
@@ -158,34 +160,33 @@ async def start_command(message: types.Message):
     )
     await message.answer("Нажми кнопку ниже, чтобы открыть мини-апп:", reply_markup=keyboard)
 
-dp.include_router(router)
-
-# Flask endpoint для Telegram Webhook
-@app.route("/webhook", methods=["POST"])
-async def webhook():
-    update = Update(**request.json)
-    await dp.feed_update(update)
-    return jsonify({"status": "ok"})
+# Включаем маршруты webhook для Telegram
+@app.route(WEBHOOK_PATH, methods=["POST"])
+async def telegram_webhook():
+    try:
+        update = types.Update(**request.json)
+        await dp.feed_update(update)
+        return jsonify({"ok": True})
+    except Exception as e:
+        print(f"[ERROR] Telegram webhook: {e}")
+        return jsonify({"ok": False, "error": str(e)}), 500
 
 # -----------------------------
-# Установка webhook на Telegram
+# Установка webhook для Telegram
 # -----------------------------
+@app.before_first_request
 def setup_webhook():
-    # URL на Render
-    url = os.environ.get("WEBHOOK_URL")
-    if not url:
-        print("[WARNING] WEBHOOK_URL не задан в env, бот работать не будет")
-        return
-    webhook_url = f"{url}/webhook"
     import asyncio
-    asyncio.run(bot.set_webhook(webhook_url))
-    print(f"[INFO] Webhook установлен на {webhook_url}")
+    async def _set_webhook():
+        await bot.delete_webhook(drop_pending_updates=True)
+        await bot.set_webhook(WEBHOOK_URL)
+        print(f"[INFO] Webhook установлен на {WEBHOOK_URL}")
+    asyncio.get_event_loop().run_until_complete(_set_webhook())
 
 # -----------------------------
-# Запуск
+# Запуск Flask через gunicorn
 # -----------------------------
 if __name__ == "__main__":
-    setup_webhook()
     port = int(os.environ.get("PORT", 5000))
-    print(f"[INFO] Flask запущен на порту {port}")
-    app.run(host="0.0.0.0", port=port)
+    print(f"[INFO] Flask запущен локально на порту {port}")
+    app.run(host="0.0.0.0", port=port, debug=True)
